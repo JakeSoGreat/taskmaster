@@ -1,31 +1,25 @@
 from django.db import models
 
+# a model for Category to store category names
+# category names are unique and no longer than 50 characters
 
 class Category(models.Model):
-    """
-    A category model for organizing tasks.
-    """
-    name = models.CharField(max_length=100, unique=True)
+	name = models.CharField(max_length=50, unique=True)
 
-    class Meta:
-        verbose_name_plural = 'Categories'
-        ordering = ['name']
+	def __str__(self):
+		return self.name
 
-    def __str__(self):
-        return self.name
-
+# a model for Task to store task title, due date,
+# task completed status, and category.
+# task title is no longer than 100 characters,
+# completed status is False by default
+# and category is a foreign key to Category.
 
 class Task(models.Model):
-    """
-    A simple task model for the taskmaster application.
-    """
-    title = models.CharField(max_length=200)
-    due_date = models.DateField(null=True, blank=True)
-    completed = models.BooleanField(default=False)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+	title = models.CharField(max_length=100)
+	due_date = models.DateField()
+	completed = models.BooleanField(default=False)
+	category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
-    class Meta:
-        ordering = ['due_date']
-
-    def __str__(self):
-        return self.title
+	def __str__(self):
+		return self.title

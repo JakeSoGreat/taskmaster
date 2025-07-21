@@ -1,56 +1,30 @@
-from django.shortcuts import redirect
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
 from .models import Task
-
+from .forms import TaskForm
 
 def home(request):
     """
-    Home view that redirects to admin or shows basic info.
+    A view to display the tasks to do and the completed tasks
+    with the tasks due soonest at the top
     """
-    return HttpResponse("""
-    <h1>TaskMaster - Backend Only</h1>
-    <p>Welcome to TaskMaster! The frontend templates have been removed.</p>
-    <p>Please use the Django admin interface to manage tasks:</p>
-    <p><a href="/admin/">Go to Admin Interface</a></p>
-    """)
 
+    to_do_tasks = Task.objects.filter(completed=False).order_by('due_date')
+    done_tasks = Task.objects.filter(completed=True).order_by('-due_date')
 
-def task_list(request):
-    """
-    Redirect to admin task list.
-    """
-    return redirect('/admin/tasks/task/')
+    if request.method == 'POST':
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        form = TaskForm()
 
+    context = {
+        'to_do_tasks': to_do_tasks,
+        'done_tasks': done_tasks,
+        'form': form,
+    }
 
-def task_create(request):
-    """
-    Redirect to admin task creation.
-    """
-    return redirect('/admin/tasks/task/add/')
+    return render(request, 'tasks/index.html', context)
 
-
-def task_update(request, pk):
-    """
-    Redirect to admin task update.
-    """
-    return redirect(f'/admin/tasks/task/{pk}/change/')
-
-
-def task_delete(request, pk):
-    """
-    Redirect to admin task deletion.
-    """
-    return redirect(f'/admin/tasks/task/{pk}/delete/')
-
-
-def task_toggle(request, pk):
-    """
-    Toggle task completion status and redirect back.
-    """
-    try:
-        task = Task.objects.get(pk=pk)
-        task.completed = not task.completed
-        task.save()
-        return redirect('/admin/tasks/task/')
-    except Task.DoesNotExist:
-        return redirect('/admin/tasks/task/')
+# Create your views here.
